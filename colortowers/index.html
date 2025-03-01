@@ -3,8 +3,10 @@
 <head>
    <meta charset="utf-8">
    <title>Color Towers</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
 </head>
 <body>
 
@@ -224,6 +226,10 @@
       border: 4px solid;
       border-radius: 4px;
       z-index: 10;
+
+      &.ui-draggable-dragging {
+         z-index: 15;
+      }
 
       &:last-child {
          cursor: pointer;
