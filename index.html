@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+   <meta charset="utf-8">
+   <title>Color Towers</title>
+   <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+   <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+</head>
+<body>
+
+<div id="console">
+   <div class="message">
+      <div>
+         <div>
+            <strong>Rules:</strong> You can only move a top-most block to an empty column or to the block of same color.
+         </div>
+         <div>
+            Maximum of blocks in one column is 10. Separate all colors, so each column have only blocks of same color.
+         </div>
+         <div>
+            Your progress is not saved! Refresh a page to start over.
+         </div>
+      </div>
+   </div>
+</div>
+
+<div id="game-cont">
+   <div id="game">
+      <div class="column">
+         <div class="disc"></div>
+      </div>
+   </div>
+</div>
+
+<script>
+   let moveCounter = 0;
+
+   const game = $('#game');
+   const column = $('.column', game);
+   const disc = $('.disc', game);
+
+   const setup = [
+      "rygpbogpry",
+      "byrbogpyob",
+      "ybgrbpgrog",
+      "yoogbppyop",
+      "rpgboygpro",
+      "brgryobpry"
+   ];
+
+   for(let i = 0; i < 9; i++)
+      disc.clone().appendTo(column);
+   for(let i = 0; i < 7; i++){
+      const cloned = $(column).clone();
+      cloned.appendTo(game);
+      i > 4 && cloned.empty();
+   }
+
+   const discs = $('.disc');
+
+   discs.each(function(i, self) {
+      const c = Math.floor(i / 10);
+      const p = i % 10;
+      const color = setup[c][9-p];
+
+      $(self).attr('data-col', color);
+   });
+
+   discs.draggable({
+      revert: true,
+      revertDuration: 0,
+      start: function(e, ui) {
+         const draggable = $(this);
+
+         if(!draggable.is(':last-child')){
+            e.stopPropagation();
+            e.preventDefault();
+         }
+      },
+   });
+
+   let alertTimeout;
+
+   $('.column').droppable({
+      drop: function(e, ui) {
+         const column = $(this);
+         const draggable = $(ui.draggable);
+
+         if(!draggable.is(':last-child'))
+            return;
+
+         const under = column.find('.disc:last-child');
+
+         if(column.find('.disc').length >= 10){
+            alert('Max blocks in one column is 10.');
+            return;
+         }
+
+         if(under.length > 0 && (under.attr('data-col') != draggable.attr('data-col'))){
+            alert('You can only move a block on top of same color.')
+            return;
+         }
+
+         draggable.appendTo(column);
+         moveCounter++;
+
+         showCounter();
+      },
+   });
+
+   function showCounter() {
+      updateMessage('Moves: ' + moveCounter);
+   }
+
+   function alert(msg) {
+      updateMessage(msg);
+      alertTimeout && clearTimeout(alertTimeout);
+      alertTimeout = setTimeout(showCounter, 5000);
+      $('.message').effect('shake', {
+         times: 2,
+         distance: 5,
+      });
+   }
+
+   function updateMessage(msg) {
+      $('.message')
+         .addClass('alert')
+         .html(msg);
+   }
+</script>
+
+</body>
+
+<style>
+   * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+   }
+
+   html, body {
+      height: 100%;
+      font-size: 16px;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+   }
+
+   body {
+      display: grid;
+      grid-template-rows: minmax(4rem, auto) 1fr;
+      padding-bottom: 1rem;
+      background-color: #5a6571;
+   }
+
+   #console {
+      text-align: center;
+      margin: 0 auto;
+   }
+
+   .message {
+      padding: .5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2rem;
+      height: 100%;
+      color: #c8d1df;
+      text-shadow: 1px 1px 2px black;
+      line-height: 1;
+
+      &.alert {
+         font-weight: bold;
+      }
+   }
+
+   #game-cont {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+   }
+
+   #game {
+      display: flex;
+      gap: 2px;
+      height: 100%;
+      flex: 1;
+   }
+
+   #game, #console {
+      max-width: 80rem;
+   }
+
+   .column {
+      border: 1px solid #d4cbbd;
+      background-color: #f7eedf;
+      display: flex;
+      flex-direction: column-reverse;
+      justify-content: end;
+      gap: 2px;
+      padding: 3px;
+      flex: 1;
+      border-radius: .5rem;
+      position: relative;
+
+      &.ui-droppable-hover {
+         background-color: #fef5e6;
+      }
+
+      &:after {
+         display: block;
+         content: " ";
+         border-bottom: 1px solid #c3bcaf;
+         position: absolute;
+         top: calc(10% - 20px);
+         margin: 0 5px;
+         width: calc(100% - 10px);
+         left: 0;
+      }
+   }
+
+   .disc {
+      height: 9%;
+      min-height: 1rem;
+      border: 4px solid;
+      border-radius: 4px;
+      z-index: 10;
+
+      &:last-child {
+         cursor: pointer;
+
+         &:hover {
+            opacity: 0.9;
+         }
+      }
+
+      &[data-col=r] { background-color: #dd2222; border-color: #b11f1f; }
+      &[data-col=y] { background-color: #ffd700; border-color: #cba800; }
+      &[data-col=g] { background-color: #228b22; border-color: #1d6a1d; }
+      &[data-col=p] { background-color: #9370db; border-color: #755ab4; }
+      &[data-col=b] { background-color: #1e90ff; border-color: #1a6ac8; }
+      &[data-col=o] { background-color: #ff731b; border-color: #bd5f18; }
+   }
+</style>
+</html>
